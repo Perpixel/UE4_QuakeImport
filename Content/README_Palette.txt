@@ -1,0 +1,1 @@
+Place palette.lmp here from the Quake pak0.pak
