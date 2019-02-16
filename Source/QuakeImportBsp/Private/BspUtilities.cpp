@@ -1,19 +1,17 @@
-// Copyright 2018 Guillaume Plourde. All Rights Reserved.
-// https://github.com/Perpixel/
+// Fill out your copyright notice in the Description page of Project Settings.
 
+// QuakeImport
 #include "BspUtilities.h"
+#include "QuakeCommon.h"
 
+// EPIC
 #include "AssetRegistryModule.h"
-#include "IPluginManager.h"
 #include "UnrealString.h"
 #include "Editor/EditorEngine.h"
-#include "Engine/Classes/Materials/MaterialExpressionConstant.h"
 #include "Engine/StaticMesh.h"
 #include "Engine/Texture2D.h"
 #include "Factories/MaterialFactoryNew.h"
-#include "Factories/TextureFactory.h"
 #include "Materials/Material.h"
-#include "Misc/FileHelper.h"
 #include "RawMesh/Public/RawMesh.h"
 #include "UObject/Package.h"
 
@@ -34,7 +32,7 @@ namespace bsputils
     {
         bspformat29::Header header;
 
-        ReadData<bspformat29::Header>(data, 0, header);
+        QuakeCommon::ReadData<bspformat29::Header>(data, 0, header);
 
         if (header.version != bspformat29::HEADER_VERSION_29)
         {
@@ -63,17 +61,17 @@ namespace bsputils
     void BspLoader::LoadTextures(const uint8*& data, const bspformat29::Lump& lump)
     {
         int numtex = 0;
-        size_t position = lump.position; // position in the data
+        uint32 position = lump.position; // position in the data
 
         // first int is the number of textures
-        position += ReadData(data, position, numtex);
+        position += QuakeCommon::ReadData(data, position, numtex);
 
         for (int i = 0; i < numtex; i++)
         {
             // this texture details followed by the 4 texture mips
             const bspformat29::Miptex* mt;
             int offset = 0;
-            position += ReadData(data, position, offset);
+            position += QuakeCommon::ReadData(data, position, offset);
             mt = reinterpret_cast<const bspformat29::Miptex*>(data + lump.position + offset);
 
             // Just getting mip0 (texture lump offset + miptex offset + mip0 offset)
@@ -92,37 +90,6 @@ namespace bsputils
         TArray<char> char_array;
         const char* in = reinterpret_cast<const char*>(data + lump.position);
         m_bsp29->entities = ANSI_TO_TCHAR(in);
-    }
-
-    template<typename T>
-    UObject* CheckIfAssetExist(FString name, const UPackage& package)
-    {
-        FString fullname = package.GetName() + TEXT(".") + name;
-        return LoadObject<T>(NULL, *fullname, nullptr, LOAD_Quiet | LOAD_NoWarn);
-    }
-
-    void SaveAsset(UObject& object, UPackage& package)
-    {
-        FString PackageFileName = FPackageName::LongPackageNameToFilename(package.GetName(), FPackageName::GetAssetPackageExtension());
-        UPackage::SavePackage(&package, &object, RF_Public | RF_Standalone, *PackageFileName, GError, nullptr, true, true, SAVE_NoError);
-    }
-
-    bool LoadPalette(TArray<bspformat29::QColor>& outPalette)
-    {
-        FString palFilename = IPluginManager::Get().FindPlugin(TEXT("QuakeImportBsp"))->GetContentDir() / FString("palette.lmp");
-
-        TArray<uint8> data;
-        if (FFileHelper::LoadFileToArray(data, *palFilename))
-        {
-            int32 count = data.Num() / sizeof(bspformat29::QColor);
-            outPalette.Empty();
-            bspformat29::QColor* in = (bspformat29::QColor*)data.GetData();
-            outPalette.Append(in, count);
-
-            return true;
-        }
-
-        return false;
     }
 
     void AddWedgeEntry(FRawMesh& mesh, const uint32 index, const FVector normal, const FVector2D texcoord0, const FVector2D texcoord1)
@@ -166,6 +133,12 @@ namespace bsputils
             const bspformat29::TexInfo& ti = model.texinfos[face.texinfo];
             const bspformat29::Texture& tex = model.textures[ti.miptex];
 
+            if (tex.name.StartsWith("sky"))
+            {
+                // Skip sky surfaces. We wont need them.
+                continue;
+            }
+
             Triface triface;
             triface.texinfo = face.texinfo;
             triface.numtris = face.numedges - 2; // make up number of this needed for this face 
@@ -176,7 +149,7 @@ namespace bsputils
             }
 
             for (int e = face.numedges; e-- > 0;) // extract all vertex
-            {
+            { 
                 const bspformat29::Surfedge& surfedge = model.surfedges[face.firstedge + e];
                 const bspformat29::Edge& edge = model.edges[abs(surfedge.index)];
 
@@ -253,7 +226,7 @@ namespace bsputils
 
                 int32 materialId = model.texinfos[faces[i].texinfo].miptex;
 
-                UMaterialInterface* material = (UMaterialInterface*)CheckIfAssetExist<UMaterialInterface>(model.textures[materialId].name, materialPackage);
+                UMaterialInterface* material = (UMaterialInterface*)QuakeCommon::CheckIfAssetExist<UMaterialInterface>(model.textures[materialId].name, materialPackage);
 
                 if (!material)
                 {
@@ -275,25 +248,32 @@ namespace bsputils
 
         FStaticMeshSourceModel* srcModel = new (staticmesh->SourceModels) FStaticMeshSourceModel();
 
-        srcModel->BuildSettings.MinLightmapResolution = 1024;
+        int lightmapSize = 32;
+
+        if (id == 0)
+        {
+            lightmapSize = 512; // main model mesh
+        }
+
+        srcModel->BuildSettings.MinLightmapResolution = lightmapSize;
         srcModel->BuildSettings.SrcLightmapIndex = 0;
         srcModel->BuildSettings.DstLightmapIndex = 1;
         srcModel->BuildSettings.bGenerateLightmapUVs = true;
+        srcModel->BuildSettings.bUseFullPrecisionUVs = true;
         srcModel->RawMeshBulkData->SaveRawMesh(*rmesh);
 
         staticmesh->LightingGuid = FGuid::NewGuid();
         staticmesh->ImportVersion = EImportStaticMeshVersion::LastVersion;
-        staticmesh->CreateBodySetup();
+        //staticmesh->CreateBodySetup();
         staticmesh->SetLightingGuid();
         staticmesh->EnforceLightmapRestrictions(); // Make sure the Lightmap UV point on a valid UVChannel
         staticmesh->Build();
         staticmesh->LightingGuid = FGuid::NewGuid();
-        staticmesh->LightMapResolution = 1024;
+        staticmesh->LightMapResolution = lightmapSize;
         staticmesh->LightMapCoordinateIndex = 1;
         staticmesh->PostEditChange();
 
         package.MarkPackageDirty();
-        SaveAsset(*staticmesh, package);
 
         delete rmesh;
     }
@@ -306,87 +286,20 @@ namespace bsputils
         }
     }
 
-    UTexture2D* CreateUTexture2D(const bspformat29::Texture& inTexture, UPackage& texturePackage, const TArray<bspformat29::QColor>& pal)
+    bool AppendNextTextureData(const FString& name, const int frame, const bspformat29::Bsp_29& model, TArray<uint8>& data)
     {
-        FString TextureName = inTexture.name;
+        FString nextName = name;
+        nextName[1] += frame;
 
-        if (CheckIfAssetExist<UTexture2D>(TextureName, texturePackage))
+         for (const auto& it : model.textures)
         {
-            return nullptr;
+            if (it.name == nextName)
+            {
+                data.Append(it.mip0);
+                return true;
+            }
         }
 
-        int width = inTexture.width;
-        int height = inTexture.height;
-
-        // get colors from palette
-        TArray<uint8> finalData;
-
-        for (const auto& it : inTexture.mip0)
-        {
-            finalData.Add(pal[it].b);
-            finalData.Add(pal[it].g);
-            finalData.Add(pal[it].r);
-            finalData.Add(255);
-        }
-
-        // Create Texture
-        UTexture2D* texture = NewObject<UTexture2D>(&texturePackage, FName(*TextureName), RF_Public | RF_Standalone );
-
-        texture->AddToRoot();
-        texture->PlatformData = new FTexturePlatformData();
-        texture->PlatformData->SizeX = width;
-        texture->PlatformData->SizeY = height;
-        texture->PlatformData->PixelFormat = PF_B8G8R8A8;
-
-        // Create first mip
-        FTexture2DMipMap* texmip = new(texture->PlatformData->Mips) FTexture2DMipMap();
-        texmip->SizeX = width;
-        texmip->SizeY = height;
-        texmip->BulkData.Lock(LOCK_READ_WRITE);
-        size_t textureDataSize = (width * height) * sizeof(uint8) * 4;
-        uint8* textureData = (uint8*)texmip->BulkData.Realloc(textureDataSize);
-        FMemory::Memcpy(textureData, finalData.GetData(), textureDataSize);
-        texmip->BulkData.Unlock();
-
-        texture->MipGenSettings = TMGS_NoMipmaps;
-        texture->Source.Init(width, height, 1, 1, TSF_BGRA8, textureData);
-
-        FAssetRegistryModule::AssetCreated(texture);
-
-        texture->UpdateResource();
-        texturePackage.MarkPackageDirty();
-
-        // Save
-        SaveAsset(*texture, texturePackage);
-        return texture;
+        return false;
     }
-
-    void CreateUMaterial(const FString& materialName, UPackage& materialPackage, UTexture2D& initialTexture)
-    {
-        if (CheckIfAssetExist<UMaterial>(materialName, materialPackage))
-        {
-            return;
-        }
-
-        UMaterialFactoryNew* materialFactory = NewObject<UMaterialFactoryNew>();
-        materialFactory->AddToRoot();
-
-        materialFactory->InitialTexture = &initialTexture;
-
-        UMaterial* material = (UMaterial*)materialFactory->FactoryCreateNew(UMaterial::StaticClass(), &materialPackage, *materialName, RF_Standalone | RF_Public, NULL, GWarn);
-
-        UMaterialExpressionConstant* specValue = NewObject<UMaterialExpressionConstant>(material);
-        material->AddToRoot();
-        material->Specular.Connect(0, specValue);
-
-        FAssetRegistryModule::AssetCreated(material);
-
-        material->PreEditChange(NULL);
-        material->MarkPackageDirty();
-        materialPackage.SetDirtyFlag(true);
-        material->PostEditChange();
-
-        SaveAsset(*material, materialPackage);
-    }
-
 } // namespace bsputils

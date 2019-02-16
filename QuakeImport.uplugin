@@ -2,9 +2,9 @@
 	"FileVersion": 3,
 	"Version": 1,
 	"VersionName": "1.0",
-	"FriendlyName": "QuakeImportBsp",
-	"Description": "Quake BSP import",
-	"Category": "Other",
+	"FriendlyName": "QuakeImport",
+	"Description": "Quake 1 data import",
+	"Category": "Quake",
 	"CreatedBy": "Guillaume Plourde",
 	"CreatedByURL": "https://github.com/Perpixel/",
 	"DocsURL": "",
@@ -15,7 +15,7 @@
 	"Installed": false,
 	"Modules": [
 		{
-			"Name": "QuakeImportBsp",
+			"Name": "QuakeImport",
 			"Type": "Editor",
 			"LoadingPhase": "Default"
 		}

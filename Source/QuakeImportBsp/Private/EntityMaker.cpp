@@ -1,5 +1,4 @@
-// Copyright 2018 Guillaume Plourde. All Rights Reserved.
-// https://github.com/Perpixel/
+// Fill out your copyright notice in the Description page of Project Settings.
 
 #include "EntityMaker.h"
 #include "UnrealString.h"
@@ -203,11 +202,13 @@ void EntityMaker(UWorld& world, const TArray<AttributeGroup>& entities)
         {
             ULevel* level = world.GetCurrentLevel();
             APointLight* PointLight = Cast<APointLight>(GEditor->AddActor(world.GetCurrentLevel(), APointLight::StaticClass(), FTransform(origin)));
-            PointLight->FindComponentByClass<UPointLightComponent>()->SetMobility(EComponentMobility::Static);
+
+            UPointLightComponent* pointlightComponent = PointLight->FindComponentByClass<UPointLightComponent>();
+            pointlightComponent->SetMobility(EComponentMobility::Static);
 
             if (it.Get("light"))
             {
-                PointLight->FindComponentByClass<UPointLightComponent>()->SetIntensity(it.Get("light")->ToInteger() * 20);
+                pointlightComponent->Intensity = it.Get("light")->ToInteger() * 10 * 2;
             }
 
             GEditor->EditorUpdateComponents();

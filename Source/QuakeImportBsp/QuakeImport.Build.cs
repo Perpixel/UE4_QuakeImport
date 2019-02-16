@@ -2,9 +2,9 @@
 
 using UnrealBuildTool;
 
-public class QuakeImportBsp : ModuleRules
+public class QuakeImport : ModuleRules
 {
-	public QuakeImportBsp(ReadOnlyTargetRules Target) : base(Target)
+	public QuakeImport(ReadOnlyTargetRules Target) : base(Target)
 	{
 		PCHUsage = ModuleRules.PCHUsageMode.UseExplicitOrSharedPCHs;
 		
@@ -42,7 +42,8 @@ public class QuakeImportBsp : ModuleRules
                 "AssetTools",
                 "Projects",
                 "RawMesh",
-                "AssetRegistry"
+                "AssetRegistry",
+                "RenderCore"
 				// ... add private dependencies that you statically link with here ...	
 			}
 			);

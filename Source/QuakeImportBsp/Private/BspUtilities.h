@@ -1,9 +1,9 @@
-// Copyright 2018 Guillaume Plourde. All Rights Reserved.
-// https://github.com/Perpixel/
+// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
 #include "CoreMinimal.h"
+#include "QuakeCommon.h"
 
 class UTexture2D;
 class UPackage;
@@ -83,8 +83,8 @@ namespace bsputils
 
         struct Edge
         {
-            short first;    // first vertex
-            short second;   // second vertex
+            short first;
+            short second;
         };
 
         struct Surfedge
@@ -192,14 +192,6 @@ namespace bsputils
             FString             entities;
             TArray<uint8>       lightdata;
             TArray<uint8>       visdata;
-
-            int GetNumVertices() const { return size_to_int(vertices.Num()); }
-            int GetNumLeaves() const { return size_to_int(leaves.Num()); }
-            int GetNumNodes() const { return size_to_int(nodes.Num()); }
-
-        private:
-
-            int size_to_int(const size_t& size) const { return static_cast<int>(size); }
         };
     }
 
@@ -217,13 +209,6 @@ namespace bsputils
 
         bspformat29::Bsp_29* m_bsp29;
 
-        template<class T>
-        int ReadData(const uint8*& data, const int position, T& out)
-        {
-            out = *reinterpret_cast<const T*>(data + position);
-            return sizeof(T);
-        }
-
         template<typename T>
         bool DeserializeLump(const uint8*& data, const bspformat29::Lump& lump, TArray<T>& out);
 
@@ -240,7 +225,7 @@ namespace bsputils
             return false;
         }
 
-        size_t count = lump.length / sizeof(T);
+        uint32 count = lump.length / sizeof(T);
         out.Empty();
         T* in = (T*)(data + lump.position);
         out.Append(in, count);
@@ -249,13 +234,10 @@ namespace bsputils
 
     // UNREALED Import functions
     
-    // Load Quake color palette. 256 colors RGB
-    bool LoadPalette(TArray<bspformat29::QColor>& outPalette);
-    // Create Utexture2D from raw Quake texture mip
-    UTexture2D* CreateUTexture2D(const bspformat29::Texture& texture, UPackage& texturePackage, const TArray<bspformat29::QColor>& pal);
-    // Create matching material for texture
-    void CreateUMaterial(const FString& textureName, UPackage& materialPackage, UTexture2D& initialTexture);
     // From a Quake BSP model, import all submodels to individual staticmeshes
     void ModelToStaticmeshes(const bspformat29::Bsp_29& model, UPackage& package, const UPackage& materialPackage);
+
+    // Append texture pixel data to array
+    bool AppendNextTextureData(const FString& name, const int frame, const bspformat29::Bsp_29& model, TArray<uint8>& data);
 
 } // namespace bsputils
