@@ -13,7 +13,7 @@
 #include "UObject/Package.h"
 
 #include "Editor/EditorEngine.h"
-#include "Public/Editor.h"
+#include "Editor.h"
 #include "UObject/UObjectGlobals.h"
 #include "Engine/StaticMeshActor.h"
 

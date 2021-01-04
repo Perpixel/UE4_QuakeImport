@@ -1,8 +1,8 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "EntityMaker.h"
-#include "UnrealString.h"
-#include "StringConv.h"
+#include "Containers/UnrealString.h"
+#include "Containers/StringConv.h"
 #include "Engine/Light.h"
 #include "Engine/World.h"
 
@@ -10,9 +10,9 @@
 #include "Engine/StaticMeshActor.h"
 #include "Engine/StaticMesh.h"
 #include "Editor/EditorEngine.h"
-#include "Public/Editor.h"
+#include "Editor.h"
 #include "UObject/UObjectGlobals.h"
-#include "Public/FileHelpers.h"
+#include "FileHelpers.h"
 #include "Components/PointLightComponent.h"
 
 /*

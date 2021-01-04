@@ -6,8 +6,8 @@
 
 // EPIC
 #include "AssetRegistryModule.h"
-#include "IPluginManager.h"
-#include "UnrealString.h"
+#include "Interfaces/IPluginManager.h"
+#include "Containers/UnrealString.h"
 #include "Editor/EditorEngine.h"
 #include "Engine/Classes/Materials/MaterialExpressionConstant.h"
 #include "Engine/StaticMesh.h"

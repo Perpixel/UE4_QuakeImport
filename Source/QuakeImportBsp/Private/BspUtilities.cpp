@@ -6,7 +6,7 @@
 
 // EPIC
 #include "AssetRegistryModule.h"
-#include "UnrealString.h"
+#include "Containers/UnrealString.h"
 #include "Editor/EditorEngine.h"
 #include "Engine/StaticMesh.h"
 #include "Engine/Texture2D.h"

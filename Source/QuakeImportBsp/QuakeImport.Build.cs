@@ -38,12 +38,13 @@ public class QuakeImport : ModuleRules
 				"Engine",
 				"Slate",
 				"SlateCore",
-                "UnrealEd",
-                "AssetTools",
-                "Projects",
-                "RawMesh",
-                "AssetRegistry",
-                "RenderCore"
+                		"UnrealEd",
+                		"AssetTools",
+                		"Projects",
+                		"RawMesh",
+                		"AssetRegistry",
+                		"RenderCore",
+                		"RHI"
 				// ... add private dependencies that you statically link with here ...	
 			}
 			);

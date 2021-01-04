@@ -16,6 +16,7 @@
 #include "Math/Float16Color.h"
 #include "Misc/FileHelper.h"
 #include "UObject/Package.h"
+#include "RHI.h"
 
 // Quake Import
 #include "QuakeCommon.h"
@@ -72,7 +73,7 @@ void GenerateAnimations(const FString& name, const Alias& model, UPackage* packa
     animationTexture->PlatformData->SizeX = width;
     animationTexture->PlatformData->SizeY = height;
     animationTexture->PlatformData->PixelFormat = pixelformat; // PF_B8G8R8A8
-    animationTexture->PlatformData->NumSlices = 1;
+    //animationTexture->PlatformData->NumSlices = 1;
     animationTexture->MipGenSettings = TMGS_NoMipmaps;
     animationTexture->CompressionSettings = TextureCompressionSettings::TC_HDR;
     animationTexture->LODGroup = TextureGroup::TEXTUREGROUP_UI;
@@ -81,7 +82,7 @@ void GenerateAnimations(const FString& name, const Alias& model, UPackage* packa
     // Create first mip
     FTexture2DMipMap* texmip = new(animationTexture->PlatformData->Mips) FTexture2DMipMap();
 
-	int32 nBlocksX = width / GPixelFormats[pixelformat].BlockSizeX;
+    int32 nBlocksX = width / GPixelFormats[pixelformat].BlockSizeX;
     int32 nBlocksY = height / GPixelFormats[pixelformat].BlockSizeY;
     texmip->SizeX = width;
     texmip->SizeY = height;
@@ -133,7 +134,7 @@ void GenerateAnimationNormals(const FString& name, const Alias& model, UPackage*
     normalTexture->PlatformData->SizeX = width;
     normalTexture->PlatformData->SizeY = height;
     normalTexture->PlatformData->PixelFormat = pixelformat; // PF_B8G8R8A8
-    normalTexture->PlatformData->NumSlices = 1;
+    //normalTexture->PlatformData->NumSlices = 1;
     normalTexture->MipGenSettings = TMGS_NoMipmaps;
     normalTexture->CompressionSettings = TextureCompressionSettings::TC_Normalmap;
     normalTexture->LODGroup = TextureGroup::TEXTUREGROUP_UI;

@@ -1,7 +1,7 @@
 #include "QuakeCommon.h"
 
 #include "AssetRegistryModule.h"
-#include "IPluginManager.h"
+#include "Interfaces/IPluginManager.h"
 #include "Engine/Classes/Materials/MaterialExpressionConstant.h"
 #include "Engine/Texture2D.h"
 #include "Factories/MaterialFactoryNew.h"
