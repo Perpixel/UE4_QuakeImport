@@ -1,4 +1,4 @@
-# Quake data import for Unreal4
+# Quake data import for Unreal Editor 5
 
 Support for,
 
