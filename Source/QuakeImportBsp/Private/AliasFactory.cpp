@@ -50,7 +50,7 @@ void GenerateAnimations(const FString& name, const Alias& model, UPackage* packa
     {
         for (uint32 j = 0; j < model.m_numVerts; j++)
         {
-            FVector position = model.UnpackVertex(model.m_poses[i].points[j]);
+            FVector3f position = model.UnpackVertex(model.m_poses[i].points[j]);
             position -= model.UnpackVertex(model.m_poses[0].points[j]);
 
             FFloat16Color color;
@@ -113,7 +113,7 @@ void GenerateAnimationNormals(const FString& name, const Alias& model, UPackage*
     {
         for (uint32 j = 0; j < model.m_numVerts; j++)
         {
-            FVector normal = model.GetNormal(model.m_poses[i].points[j].lightnormalindex);
+            FVector3f normal = model.GetNormal(model.m_poses[i].points[j].lightnormalindex);
 
             normal.X *= -1;
 
@@ -171,7 +171,7 @@ UStaticMesh* BuildStaticMesh(const FName& name, const Alias& model, UPackage* pa
     // Animated models will use uproceduralmesh for the animations
     for (uint32 i = 0; i < model.m_numVerts; i++)
     {
-        FVector vec = model.UnpackVertex(model.m_poses[0].points[i]);
+        FVector3f vec = model.UnpackVertex(model.m_poses[0].points[i]);
         vec.X *= -1; // flip x axis
         rmesh->VertexPositions.Add(vec);
     }
@@ -184,7 +184,7 @@ UStaticMesh* BuildStaticMesh(const FName& name, const Alias& model, UPackage* pa
         {
             // Unpack UV
             const AliasTexcoord* st = &model.m_texcoords[model.m_triangles[i].indices[j]];
-            FVector2D texcoord((float)st->s / model.m_skinWidth, (float)st->t / model.m_skinHeight);
+            FVector2f texcoord((float)st->s / model.m_skinWidth, (float)st->t / model.m_skinHeight);
             if (st->onseam > 0 && !model.m_triangles[i].front)
             {
                 texcoord.X += 0.5f; // offset by 0.5 for uv on the back side of our model
@@ -192,14 +192,14 @@ UStaticMesh* BuildStaticMesh(const FName& name, const Alias& model, UPackage* pa
 
             // Set vertex
             int index = model.m_triangles[i].indices[j];
-            FVector normal = model.GetNormal(model.m_poses[0].points[index].lightnormalindex);
+            FVector3f normal = model.GetNormal(model.m_poses[0].points[index].lightnormalindex);
             normal.X *= -1;
 
             rmesh->WedgeIndices.Add(index);
             rmesh->WedgeColors.Add(FColor(0));
             rmesh->WedgeTangentZ.Add(normal); // normal
             rmesh->WedgeTexCoords[0].Add(texcoord);
-            rmesh->WedgeTexCoords[1].Add(FVector2D(((float)index + 0.5f) / model.m_numVerts, 0.5f)); // this channel is for the vertex animation
+            rmesh->WedgeTexCoords[1].Add(FVector2f(((float)index + 0.5f) / model.m_numVerts, 0.5f)); // this channel is for the vertex animation
         }
         rmesh->FaceMaterialIndices.Add(0);
         rmesh->FaceSmoothingMasks.Add(0); // TODO dont know how that work yet
@@ -207,7 +207,7 @@ UStaticMesh* BuildStaticMesh(const FName& name, const Alias& model, UPackage* pa
 
     // build staticmesh
 
-    FStaticMeshSourceModel* srcModel = new (staticmesh->SourceModels)FStaticMeshSourceModel();
+    FStaticMeshSourceModel* srcModel = &staticmesh->AddSourceModel();
 
     srcModel->BuildSettings.bRecomputeNormals = false;
     srcModel->BuildSettings.bRemoveDegenerates = false;
@@ -264,7 +264,7 @@ UObject* UAliasFactory::FactoryCreateBinary(UClass* InClass, UObject* InParent, 
             FString skin0 = Name.ToString() + "_material_0";
             if (UMaterialInterface* material = (UMaterialInterface*)QuakeCommon::CheckIfAssetExist<UMaterialInterface>(skin0, *package))
             {
-                staticMesh->StaticMaterials.AddUnique(FStaticMaterial(material, FName(*skin0), FName(*skin0)));
+                staticMesh->GetStaticMaterials().AddUnique(FStaticMaterial(material, FName(*skin0), FName(*skin0)));
             }
             
             // 

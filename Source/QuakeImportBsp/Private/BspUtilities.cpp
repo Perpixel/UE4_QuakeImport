@@ -92,7 +92,7 @@ namespace bsputils
         m_bsp29->entities = ANSI_TO_TCHAR(in);
     }
 
-    void AddWedgeEntry(FRawMesh& mesh, const uint32 index, const FVector normal, const FVector2D texcoord0, const FVector2D texcoord1)
+    void AddWedgeEntry(FRawMesh& mesh, const uint32 index, const FVector3f normal, const FVector2f texcoord0, const FVector2f texcoord1)
     {
         mesh.WedgeIndices.Add(index);
         mesh.WedgeColors.Add(FColor(0));
@@ -110,7 +110,7 @@ namespace bsputils
             FVector normal;
             TArray<uint32> points;
             int texinfo;
-            TArray<FVector2D> texcoords;
+            TArray<FVector2f> texcoords;
         };
 
         FString submodelName("submodel");
@@ -162,18 +162,18 @@ namespace bsputils
 
                 triface.points.Add(vertex_id);
 
-                FVector2D tex_coord;
+                FVector2f tex_coord;
 
                 // Generate texture coordinates
 
-                FVector point = FVector(
+                FVector3f point = FVector3f(
                     model.vertices[vertex_id].x,
                     model.vertices[vertex_id].y,
                     model.vertices[vertex_id].z
                 );
 
-                tex_coord.X = FVector::DotProduct(point, FVector(ti.vecs[0][0], ti.vecs[0][1], ti.vecs[0][2])) + ti.vecs[0][3];
-                tex_coord.Y = FVector::DotProduct(point, FVector(ti.vecs[1][0], ti.vecs[1][1], ti.vecs[1][2])) + ti.vecs[1][3];
+                tex_coord.X = FVector3f::DotProduct(point, FVector3f(ti.vecs[0][0], ti.vecs[0][1], ti.vecs[0][2])) + ti.vecs[0][3];
+                tex_coord.Y = FVector3f::DotProduct(point, FVector3f(ti.vecs[1][0], ti.vecs[1][1], ti.vecs[1][2])) + ti.vecs[1][3];
 
                 tex_coord.X /= tex.width;
                 tex_coord.Y /= tex.height;
@@ -189,7 +189,7 @@ namespace bsputils
         // Vertices
         for (int i = 0; i < model.vertices.Num(); i++)
         {
-            FVector vec(
+            FVector3f vec(
                 -model.vertices[i].x, // flip X axis
                 model.vertices[i].y,
                 model.vertices[i].z);
@@ -206,7 +206,7 @@ namespace bsputils
                 AddWedgeEntry(
                     *rmesh,
                     faces[i].points[0],
-                    FVector(faces[i].normal.X, faces[i].normal.Y, faces[i].normal.Z),
+                    FVector3f(faces[i].normal.X, faces[i].normal.Y, faces[i].normal.Z),
                     faces[i].texcoords[0],
                     faces[i].texcoords[0]
                 );
@@ -218,7 +218,7 @@ namespace bsputils
                     AddWedgeEntry(
                         *rmesh,
                         faces[i].points[index],
-                        FVector(faces[i].normal.X, faces[i].normal.Y, faces[i].normal.Z),
+                        FVector3f(faces[i].normal.X, faces[i].normal.Y, faces[i].normal.Z),
                         faces[i].texcoords[index],
                         faces[i].texcoords[index]
                     );
@@ -233,7 +233,7 @@ namespace bsputils
                     material = UMaterial::GetDefaultMaterial(MD_Surface);
                 }
 
-                int32 MaterialIndex = staticmesh->StaticMaterials.AddUnique(
+                int32 MaterialIndex = staticmesh->GetStaticMaterials().AddUnique(
                     FStaticMaterial(
                         material,
                         FName(*model.textures[materialId].name),
@@ -246,7 +246,7 @@ namespace bsputils
             }
         }
 
-        FStaticMeshSourceModel* srcModel = new (staticmesh->SourceModels) FStaticMeshSourceModel();
+        FStaticMeshSourceModel* srcModel = &staticmesh->AddSourceModel();
 
         int lightmapSize = 32;
 
@@ -262,13 +262,13 @@ namespace bsputils
         srcModel->BuildSettings.bUseFullPrecisionUVs = true;
         srcModel->RawMeshBulkData->SaveRawMesh(*rmesh);
 
-        staticmesh->LightingGuid = FGuid::NewGuid();
+        staticmesh->SetLightingGuid();
         staticmesh->ImportVersion = EImportStaticMeshVersion::LastVersion;
         //staticmesh->CreateBodySetup();
         staticmesh->SetLightingGuid();
         staticmesh->EnforceLightmapRestrictions(); // Make sure the Lightmap UV point on a valid UVChannel
         staticmesh->Build();
-        staticmesh->LightingGuid = FGuid::NewGuid();
+        staticmesh->SetLightingGuid();
         staticmesh->LightMapResolution = lightmapSize;
         staticmesh->LightMapCoordinateIndex = 1;
         staticmesh->PostEditChange();

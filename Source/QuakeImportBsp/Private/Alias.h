@@ -96,8 +96,8 @@ public:
     TArray<AliasFrame>      m_frames;
     TArray<AliasPose>       m_poses;
 
-    const FVector UnpackVertex(AliasPoint in) const;
-    const FVector GetNormal(uint32 index) const;
+    const FVector3f UnpackVertex(AliasPoint in) const;
+    const FVector3f GetNormal(uint32 index) const;
 
 // Needed at import time only. No need to keep this in the global namespace
 private:

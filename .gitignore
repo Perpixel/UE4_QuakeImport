@@ -1,4 +1,3 @@
-./Content/*
-./Binaries/*
-./Intermediate/*
-Content/palette.lmp
+Content/*
+Binaries/*
+Intermediate/*

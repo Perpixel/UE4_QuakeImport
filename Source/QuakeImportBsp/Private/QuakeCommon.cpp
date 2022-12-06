@@ -96,7 +96,7 @@ namespace QuakeCommon
 
         UMaterialExpressionConstant* specValue = NewObject<UMaterialExpressionConstant>(material);
         material->AddToRoot();
-        material->Specular.Connect(0, specValue);
+        material->GetEditorOnlyData()->Specular.Connect(0, specValue);
 
         FAssetRegistryModule::AssetCreated(material);
 

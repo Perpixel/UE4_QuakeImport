@@ -182,9 +182,9 @@ Alias::Alias(const FString name, const uint8*& buf) :
     }
 }
 
-const FVector Alias::UnpackVertex(AliasPoint in) const
+const FVector3f Alias::UnpackVertex(AliasPoint in) const
 {
-    FVector out;
+    FVector3f out;
 
     for (int i = 0; i < 3; i++)
     {
@@ -194,7 +194,7 @@ const FVector Alias::UnpackVertex(AliasPoint in) const
     return out;
 }
 
-const FVector Alias::GetNormal(uint32 index) const
+const FVector3f Alias::GetNormal(uint32 index) const
 {
     float normals[162][3] = {
 
@@ -363,7 +363,7 @@ const FVector Alias::GetNormal(uint32 index) const
 
     };
 
-    FVector vector(
+    FVector3f vector(
         normals[index][0],
         normals[index][1],
         normals[index][2]);
